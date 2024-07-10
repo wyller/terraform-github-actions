@@ -1,0 +1,27 @@
+name: Terraform CI
+
+on:
+    push:
+        branches: main
+
+jobs:
+    terraform:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Checkout do Codigo
+            uses: actions/checkout@v4 
+
+          - name: Instalando terraform
+            uses: hashicorp/setup-terraform@v3
+
+          - name: Rodas init
+            run: terraform init
+
+          - name: Criar um plano
+            run: terraform plan -out main.tfplan 
+            env:
+              ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+              ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+              ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+              ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}

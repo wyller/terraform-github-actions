@@ -2,41 +2,41 @@ resource "random_pet" "rg_name" {
   prefix = var.resource_group_name_prefix
 }
 
-resource "azurerm_resource_group" "rg" {
+resource "azurerm_resource_group" "student-rg" {
   location = var.resource_group_location
   name     = random_pet.rg_name.id
 }
 
 # Cria rede vritual
-resource "azurerm_virtual_network" "vnet" {
-  name                = "acme-vnet"
+resource "azurerm_virtual_network" "student-vnet" {
+  name                = "student-vnet"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.student-rg.location
+  resource_group_name = azurerm_resource_group.student-rg.name
 }
 
 # Cria subnets
-resource "azurerm_subnet" "subnet" {
-  name                 = "acme-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
+resource "azurerm_subnet" "student-subnet" {
+  name                 = "student-subnet"
+  resource_group_name  = azurerm_resource_group.student-rg.name
+  virtual_network_name = azurerm_virtual_network.student-vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
 # Cria IPs publicos
-resource "azurerm_public_ip" "myPubIP" {
+resource "azurerm_public_ip" "student-pip" {
   count               = var.number_resources
-  name                = "myPublicIP-${count.index + 1}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  name                = "PublicIP-${count.index + 1}"
+  location            = azurerm_resource_group.student-rg.location
+  resource_group_name = azurerm_resource_group.student-rg.name
   allocation_method   = "Dynamic"
 }
 
 # Cria SG e uma regra de SSH
-resource "azurerm_network_security_group" "nsg" {
-  name                = "myNetworkSecurityGroup"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+resource "azurerm_network_security_group" "student-nsg" {
+  name                = "NetworkSecurityGroup"
+  location            = azurerm_resource_group.student-rg.location
+  resource_group_name = azurerm_resource_group.student-rg.name
 
   security_rule {
     name                       = "SSH"
@@ -65,32 +65,32 @@ resource "azurerm_network_security_group" "nsg" {
 }
 
 resource "azurerm_network_security_group" "my_nsg" {
-  name                = "myNSG"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  name                = "NSG"
+  location            = azurerm_resource_group.student-rg.location
+  resource_group_name = azurerm_resource_group.student-rg.name
 
 
 }
 # Cria NIC
-resource "azurerm_network_interface" "nic" {
+resource "azurerm_network_interface" "student-nic" {
   count               = var.number_resources
-  name                = "myNIC-${count.index + 1}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  name                = "NIC-${count.index + 1}"
+  location            = azurerm_resource_group.student-rg.location
+  resource_group_name = azurerm_resource_group.student-rg.name
 
   ip_configuration {
     name                          = "nic_${count.index + 1}_configuration"
-    subnet_id                     = azurerm_subnet.subnet.id
+    subnet_id                     = azurerm_subnet.student-subnet.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.myPubIP[count.index].id
+    public_ip_address_id          = azurerm_public_ip.student-pip[count.index].id
   }
 }
 
 # Conecta SG com nic
 resource "azurerm_network_interface_security_group_association" "nicNSG" {
   count                     = var.number_resources
-  network_interface_id      = azurerm_network_interface.nic[count.index].id
-  network_security_group_id = azurerm_network_security_group.nsg.id
+  network_interface_id      = azurerm_network_interface.student-nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.student-nsg.id
 }
 
 # Cria nome generico para a chave ssh
@@ -113,8 +113,8 @@ resource "azapi_resource_action" "ssh_public_key_gen" {
 resource "azapi_resource" "ssh_public_key" {
   type      = "Microsoft.Compute/sshPublicKeys@2022-11-01"
   name      = random_pet.ssh_key_name.id
-  location  = azurerm_resource_group.rg.location
-  parent_id = azurerm_resource_group.rg.id
+  location  = azurerm_resource_group.student-rg.location
+  parent_id = azurerm_resource_group.student-rg.id
 }
 
 # salva a chave publica no diretorio principal
@@ -125,13 +125,13 @@ resource "local_file" "private_key" {
 }
 
 # Cria a maquina virtual
-resource "azurerm_linux_virtual_machine" "myVM" {
+resource "azurerm_linux_virtual_machine" "student-vm" {
   count                 = var.number_resources
-  name                  = "acmeVM${count.index + 1}"
-  location              = azurerm_resource_group.rg.location
-  resource_group_name   = azurerm_resource_group.rg.name
-  network_interface_ids = [azurerm_network_interface.nic[count.index].id]
-  size                  = "Standard_DS1_v2"
+  name                  = "studentVM${count.index + 1}"
+  location              = azurerm_resource_group.student-rg.location
+  resource_group_name   = azurerm_resource_group.student-rg.name
+  network_interface_ids = [azurerm_network_interface.student-nic[count.index].id]
+  size                  = "Standard_B1s"
 
   os_disk {
     name                 = "myOsDisk${count.index + 1}"
@@ -146,7 +146,7 @@ resource "azurerm_linux_virtual_machine" "myVM" {
     version   = "latest"
   }
 
-  computer_name  = "acmeVM${count.index + 1}"
+  computer_name  = "studentVM${count.index + 1}"
   admin_username = var.username
 
   admin_ssh_key {
@@ -159,7 +159,7 @@ resource "azurerm_linux_virtual_machine" "myVM" {
 resource "local_file" "hosts_cfg" {
   content = templatefile("inventory.tpl",
     {
-      vms      = azurerm_linux_virtual_machine.myVM
+      vms      = azurerm_linux_virtual_machine.student-vm
       username = var.username
     }
   )

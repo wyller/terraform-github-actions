@@ -1,8 +1,6 @@
 myhosts:
   hosts:
-    acmeVM1:
-      ansible_host: 13.90.142.18
-    acmeVM2:
-      ansible_host: 40.71.178.235
+    studentVM1:
+      ansible_host: 74.235.220.236
   vars:
-    ansible_user: acmeadmin
+    ansible_user: azureuser
