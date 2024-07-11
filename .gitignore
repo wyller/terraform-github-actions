@@ -2,3 +2,4 @@
 *.pem
 .terraform
 *.tfstate
+credentials
