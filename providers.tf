@@ -15,7 +15,12 @@ terraform {
       version = "~>3.0"
     }
   }
-
+  backend "azurerm" {
+    resource_group_name  = "student-storage-rg"
+    storage_account_name = "studentstorage12345"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
 }
 
 provider "azurerm" {
