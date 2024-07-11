@@ -63,7 +63,7 @@ jobs:
             ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
         - name: Apply Plan
           if: github.ref == 'refs/heads/main'
-          run: terraform apply "main.tfplan" --auto-approve
+          run: terraform apply --auto-approve
           env:
             ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
             ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
