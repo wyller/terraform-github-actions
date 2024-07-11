@@ -24,6 +24,10 @@ jobs:
       needs: [lint]
       runs-on: ubuntu-latest
       steps:
+        - name: Code checkout
+          uses: actions/checkout@v4 
+        - name: Install terraform
+          uses: hashicorp/setup-terraform@v3
         - name: Checkov
           uses: bridgecrewio/checkov-action@master
           with:
@@ -39,6 +43,10 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
+        - name: Code checkout
+          uses: actions/checkout@v4 
+        - name: Install terraform
+          uses: hashicorp/setup-terraform@v3
         - name: Terraform init
           run: terraform init
           env:
@@ -46,7 +54,6 @@ jobs:
             ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
             ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
             ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-
         - name: Create Plan
           run: terraform plan -out main.tfplan 
           env:
