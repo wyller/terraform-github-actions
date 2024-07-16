@@ -7,8 +7,8 @@ terraform {
   }
 
   backend "azurerm" {
-    resource_group_name  = "sutdent-rg"
-    storage_account_name = "sutdent-rg'"
+    resource_group_name  = "student-rg"
+    storage_account_name = "student-rg'"
     container_name       = "terraform-states"
     key                  = "terraform.tfstate"
   }
