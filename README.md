@@ -1,189 +1,80 @@
-# Receitas
+# Projeto de Provisionamento e Configuração de uma VM com Terraform, Ansible e Github Actions
 
-## Comandos que ajudam
+Este projeto demonstra como provisionar e configurar uma VM na Azure usando Terraform, Ansible e Github Actions.
 
-```shell
-# cria arquivo de configuração
-ansible-config init --disable > ansible.cfg
+## Resumo
 
-# executa modulo ping
-ansible myhosts -m ping -i inventory.yml
+### TERRAFORM:
 
-# executa playbook especifico
-ansible-playbook facts.yaml -i inventory.yml
+- Resource Group
+- Virtual Network
+- Subnet
+- Network Security Group
+- Public IP
+- Network Interface
+- Virtual Machine
 
-# adiciona variáveis extras
-ansible-playbook facts.yaml -i inventory.yml --extra-vars "{\"ansible_user\":\"azureadmin\"}"
+### ANSIBLE:
+
+- Atualiza os pacotes apt.
+- Instala o servidor web Nginx.
+
+### Github Aciton:
+
+- Executa as intuções Terraform e Ansible
+
+## Passos para execução local
+
+### Pré-requisitos
+
+Antes de começar, certifique-se de ter instalado:
+
+- Terraform
+- Ansible
+
+### 1. Configuração Inicial com Terraform
+
+1. Renomeie o arquivo `terraform.tfvars.sample` para `terraform.tfvars` e preencha os dados necessários.
+
+2. No arquivo `providers.tf` modifique as configurações `backend azurerm` para um backend válido.
+
+3. Inicialize o diretório do Terraform
+
+```bash
+terraform init
 ```
 
-## Configuração
+4. Gere e revise o plano de execução:
 
-Arquivo ansible.cfg pode se encontrar no diretório local onde o comando `ansible`
-vai rodar, pode estar dentro do diretório (linux) `/etc/ansible`.
-
-Exemplo de configuração da chave SSH:
-
-```ini
-[defaults]
-private_key_file=minhachaveprivada.pem
-host_key_checking=False
+```bash
+terraform plan -out plan.tfplan
 ```
 
-Pode também passar a chave privada usado argumento na linha de command:
+5. Aplique o plano de execução para provisionar a infraestrutura:
 
-```shell
-ansible --private-key minhachaveprivada.pem ......
+```bash
+terraform apply plan.tfplan
 ```
 
-## Inventário
+### 2. Configuração com Ansible
 
-Exemplo para executar módulos na máquina local, use invetário abaixo:
+1. Navegue para o diretório do Ansible:
 
-```ini
-[all]
-localhost   ansible_connection=local
+```bash
+cd ansible
 ```
 
-Exemplo simples:
+2. Execute o playbook principal para configurar os servidores:
 
-```ini
-[web]
-web1.example.com
-web2.example.com
-
-[db]
-db1.example.com
-db2.example.com
-db3.example.com
+```bash
+ansible-playbook -i inventory.ini playbook.yml
 ```
 
-Exemplo com regex:
+OBS.: Caso o playbook retorne error de autentificação será necessário a insatalação do pacote `sshpass` para permitir que o ansible consiga acessar a vm via ssh usando o password forneceido.
 
-```ini
-[web]
-web[1:10].example.com
+No Ubuntu
 
-[db]
-db[1:3].example.com
+```bash
+sudo apt-get update
+sudo apt-get install sshpass
 ```
-
-Exemplo Yaml:
-
-```yaml
-web:
-  hosts:
-    web1.example.com:
-    web2.example.com:
-db:
-  hosts:
-    db1.example.com:
-    db2.example.com:
-    db2.example.com:
-linux:
-  children:
-    web:
-    db:
-```
-
-## Arquivos de variáveis
-
-As variáveis tem precedências e precisam de muito cuidado pois pode trazer uma
-complexidade muito grande.
-
-```yaml
----
-ansible_user: azureadmin
-administrator: tmoreira
-idioma: pt_BR
-curso: IAC
-```
-
-Veja sempre a ordem de precedência para não se perder em variáveis.
-
-## Playbooks
-
-Playbooks são tarefas que são executadas em um ou mais hosts.
-
-```yaml
-- hosts: myhosts
-  become: yes
-  tasks:
-    - name: instala Nginx
-      apt: name=nginx state=latest
-```
-
-Melhorando o script acima:
-
-```yaml
-- hosts: myhosts
-  become: yes
-  tasks:
-    - name: atualiza cache
-      apt: update_cache=yes
-
-    - name: instala Nginx
-      apt: name=nginx state=latest
-```
-
-Podemos melhorar ainda mais...
-
-```yaml
-- hosts: myhosts
-  become: yes
-  tasks:
-    - name: atualiza cache
-      apt: update_cache=yes
-
-    - name: instala Nginx
-      apt: name=nginx state=latest
-
-      notify:
-        - reinicia nginx
-
-  handlers:
-    - name: reinicia nginx
-      service: name=nginx state=reloaded
-```
-
-Adicionando um template:
-
-```yaml
-- name: Cria arquivo "index.html" com conteudo template
-  template:
-    src: "nginx.html.j2"
-    dest: /var/www/html/index.html
-    mode: 0644
-```
-
-Dica pra ir mais rápido:
-
-```yaml
-- hosts: myhosts
-  gather_facts: false
-```
-
-Condicionais:
-
-```yaml
-- name: inclui tarefa se a variável hostvar estiver definida
-  ansible.builtin.include_tasks: "{{ hostvar }}.yaml"
-  when: hostvar is defined
-```
-
-Lista de items:
-
-```yaml
-- name: instale meus pacotes essenciais
-  ansible.builtin.apt:
-    pkg:
-      - neovim
-      - nginx
-      - python3-devel
-```
-
-### Referências
-
-[Módulo APT](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html)
-[Módulo DNF](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/dnf_module.html#ansible-collections-ansible-builtin-dnf-module)
-
-## Roles (reusabilidade)

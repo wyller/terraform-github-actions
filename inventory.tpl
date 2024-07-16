@@ -1,8 +1,3 @@
-myhosts:
-  hosts:
-  %{ for vm in vms ~}
-  ${vm.name}:
-      ansible_host: ${vm.public_ip_address}
-  %{ endfor ~}
-vars:
-    ansible_user: ${username}
+[web]
+${web_ip} ansible_user=${web_user} ansible_ssh_pass=${web_password}
+
