@@ -1,11 +1,7 @@
-# Resource Group
-
 resource "azurerm_resource_group" "rg" {
   location = var.resource_group_location
   name     = var.resource_group_name
 }
-
-# Virtual Network
 
 resource "azurerm_virtual_network" "vnet" {
   name                = "student-vnet"
@@ -14,16 +10,12 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-# Subnet
-
 resource "azurerm_subnet" "subnet" {
   name                 = "student-subnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
-
-# Network Security Group
 
 resource "azurerm_network_security_group" "nsg" {
   name                = "student-nsg"
@@ -55,8 +47,6 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
-# Public IP
-
 resource "azurerm_public_ip" "vm_public_ip" {
   name                = "student-pip"
   location            = azurerm_resource_group.rg.location
@@ -65,8 +55,6 @@ resource "azurerm_public_ip" "vm_public_ip" {
   sku                 = "Standard"
   zones               = ["1", "2", "3"]
 }
-
-# Network Interface
 
 resource "azurerm_network_interface" "vm_nic" {
   name                = "student-nic"
@@ -81,16 +69,10 @@ resource "azurerm_network_interface" "vm_nic" {
   }
 }
 
-
-# Network Interface and Network Security Group Association
-
 resource "azurerm_network_interface_security_group_association" "nsg_association" {
   network_interface_id      = azurerm_network_interface.vm_nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
-
-
-# Virtual Machine
 
 resource "azurerm_linux_virtual_machine" "my_vm" {
   name                  = "student-vm"
@@ -114,8 +96,6 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
   admin_password                  = var.vm_password
   disable_password_authentication = false
 }
-
-# Generate Ansible Inventory
 
 resource "local_file" "inventory" {
   content = templatefile("inventory.tpl", {
