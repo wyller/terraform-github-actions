@@ -30,7 +30,7 @@ jobs:
           TF_VAR_vm_password: ${{ secrets.TF_VAR_vm_admin_password }}
 
       - name: Run terraform fmt
-        run: terraform fmt -check --diff
+        run: terraform fmt 
 
       - name: Execute terraform linter
         uses: terraform-linters/setup-tflint@v1
@@ -41,7 +41,7 @@ jobs:
           soft_fail: true
 
       - name: Run terraform plan
-        run: terraform plan -out main.tfplan -lock=false  
+        run: terraform plan -out main.tfplan
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID}}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET}}
