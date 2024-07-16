@@ -91,9 +91,9 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
     sku       = "22_04-lts-gen2"
     version   = "latest"
   }
-  computer_name                   = "studentvm"
-  admin_username                  = var.vm_username
-  admin_password                  = var.vm_password
+  computer_name  = "studentvm"
+  admin_username = var.vm_username
+  #admin_password                  = var.vm_password
   disable_password_authentication = false
 }
 
