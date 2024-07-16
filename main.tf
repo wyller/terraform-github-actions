@@ -95,7 +95,6 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
   admin_username                  = var.vm_username
   admin_password                  = var.vm_password
   disable_password_authentication = false
-
 }
 
 resource "local_file" "inventory" {
