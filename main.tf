@@ -91,17 +91,18 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
     sku       = "22_04-lts-gen2"
     version   = "latest"
   }
-  computer_name  = "studentvm"
-  admin_username = var.vm_username
-  #admin_password                  = var.vm_password
+  computer_name                   = "studentvm"
+  admin_username                  = var.vm_username
+  admin_password                  = var.vm_password
   disable_password_authentication = false
+
 }
 
 resource "local_file" "inventory" {
   content = templatefile("inventory.tpl", {
-    web_ip   = azurerm_public_ip.vm_public_ip.ip_address,
-    web_user = var.vm_username,
-    #web_password = var.vm_password
+    web_ip       = azurerm_public_ip.vm_public_ip.ip_address,
+    web_user     = var.vm_username,
+    web_password = var.vm_password
   })
   filename = "./ansible/inventory.ini"
 }

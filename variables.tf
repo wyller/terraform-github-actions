@@ -21,3 +21,9 @@ variable "vm_password" {
   description = "vm password"
   default     = "admin@123"
 }
+
+variable "username" {
+  type        = string
+  description = "O usuario que vai ser usado pra acessar a VM."
+  default     = "admin"
+}
